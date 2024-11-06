@@ -89,6 +89,7 @@ const App = () => {
       <div id="card-container" className="card-container">
         <Suspense fallback={<FallbackLoader />}>
           {visibleCards.map((item, idx) => (
+            // ids would have been prefered for keys. Because they were not present in mock api response I have used index.
             <Card data={item} key={idx} />
           ))}
         </Suspense>
