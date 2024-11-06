@@ -1,0 +1,1 @@
+.card{display:flex;flex-direction:column;justify-content:space-between;width:calc(33.3333333333% - 10px - 1px);margin:10px 5px}.card .card-image{aspect-ratio:auto 2/3;flex:1}.card .card-name{text-align:left;font-weight:200;font-size:large;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;max-width:100%}
