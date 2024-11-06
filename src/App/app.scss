@@ -1,0 +1,20 @@
+.app-container {
+    height: 100vh;
+    overflow: scroll;
+    -ms-overflow-style: none;
+
+    .card-container {
+        display: flex;
+        flex-flow: wrap;
+        justify-content: flex-start;
+        align-items: center;
+        width: 100%;
+        overflow: visible;
+
+    }
+    
+}
+
+.app-container::-webkit-scrollbar {
+    display: none;
+}
