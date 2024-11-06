@@ -3,7 +3,9 @@
   "version": "1.0.0",
   "scripts": {
     "build": "webpack --config ./webpack/webpack.config.js",
-    "serve": "webpack serve --config ./webpack/webpack.config.js"
+    "serve": "webpack serve --config ./webpack/webpack.config.js",
+    "predeploy": "npm run build",
+    "deploy": "gh-pages -d build"
   },
   "author": "",
   "license": "ISC",
