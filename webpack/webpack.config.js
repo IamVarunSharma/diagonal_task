@@ -3,6 +3,7 @@ const path = require("path");
 const MiniCssExtractPlugin = require("mini-css-extract-plugin");
 const autoPrefixer = require("autoprefixer");
 const cssNano = require("cssnano");
+const TerserPlugin = require("terser-webpack-plugin");
 
 module.exports = {
   resolve: {
@@ -64,6 +65,8 @@ module.exports = {
 
   optimization: {
     usedExports: true,
+    minimize: true,
+    minimizer: [new TerserPlugin()],
     splitChunks: {
       chunks: "async",
       minSize: 17000,

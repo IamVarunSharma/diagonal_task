@@ -1,9 +1,11 @@
-import React from "react";
+import React, { memo, useState } from "react";
 
 import "./nav.scss";
 import { BASE_URL } from "../utils/utils";
+import Search from "../Search/Search";
 
-const Nav = ({ setVisibility }) => {
+const Nav = () => {
+  const [visibility, setVisibility] = useState(false);
   return (
     <div className="nav-bar">
       <img
@@ -11,7 +13,11 @@ const Nav = ({ setVisibility }) => {
         src={`${BASE_URL}/images/Back.png`}
         alt="back button"
       />
-      <span className="nav-title">Romantic Comedy</span>
+      {!visibility ? (
+        <span className="nav-title">Romantic Comedy</span>
+      ) : (
+        <Search visibility={visibility ? "block" : "none"} />
+      )}
       <img
         onClick={() => {
           setVisibility((prev) => !prev);
@@ -24,4 +30,4 @@ const Nav = ({ setVisibility }) => {
   );
 };
 
-export default Nav;
+export default memo(Nav);

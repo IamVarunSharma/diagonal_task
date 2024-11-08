@@ -1,10 +1,10 @@
-import React, { Suspense, useEffect, useState, useCallback, lazy } from "react";
+import React, { Suspense, useEffect, useState, lazy, useMemo } from "react";
 
 import "./app.scss";
 import { BASE_URL } from "../utils/utils";
 import FallbackLoader from "../FallbackLoader/FallbackLoader";
+import DataContext from "../Context/DataContext";
 
-const Search = lazy(() => import("../Search/Search"));
 const Nav = lazy(() => import("../Nav/Nav"));
 const Card = lazy(() => import("../Card/Card"));
 
@@ -13,16 +13,17 @@ const App = () => {
   const [page, setPage] = useState(1);
   const [visibleCards, setVisibleCards] = useState([]);
   const [loading, setLoading] = useState(false);
-  const [visibility, setVisibility] = useState(false);
+  const [searchQuery, setSearchQuery] = useState("");
+
   let appContainer;
   let cardContainer;
 
-  function throttle(func, wait) {
+  const throttle = (func, wait) => {
     let isWaiting = false;
     return function executedFunction(...args) {
       if (
         appContainer.scrollTop <
-          cardContainer.offsetHeight - cardContainer.offsetHeight / 1.5  ||
+          cardContainer.clientHeight - 2 * window.innerHeight ||
         loading
       ) {
         return;
@@ -35,29 +36,9 @@ const App = () => {
         }, wait);
       }
     };
-  }
+  };
 
-  const throttleHandleScroll = throttle(() => {
-    setLoading(true);
-  }, 250);
-
-  useEffect(() => {
-    if (loading == true) {
-      setPage((prevPage) => prevPage + 1);
-    }
-  }, [loading]);
-
-  useEffect(() => {
-    appContainer = document.getElementById("app-container");
-    cardContainer = document.getElementById("card-container");
-    appContainer?.addEventListener("scroll", throttleHandleScroll);
-
-    return () => {
-      appContainer?.removeEventListener("scroll", throttleHandleScroll);
-    };
-  }, []);
-
-  const getData = useCallback(async (pageNo) => {
+  const getData = async (pageNo) => {
     try {
       const response = await fetch(`${BASE_URL}/data/page${pageNo}.json`);
       if (response.ok) {
@@ -67,34 +48,82 @@ const App = () => {
           ...parsedResponse.page["content-items"].content,
         ]);
         setLoading(false);
+      } else {
+        throw new Error(`HTTP error! status: ${response.status}`);
       }
-      throw new Error(`HTTP error! status: ${response.status}`);
     } catch (error) {
       console.warn(`Error fetching data! ${error}`);
     }
+  };
+
+  useEffect(() => {
+    if (loading == true) {
+      setPage((prevPage) => prevPage + 1);
+    }
+  }, [loading]);
+
+  useEffect(() => {
+    const throttleHandleScroll = throttle(() => {
+      setLoading(true);
+    }, 100);
+
+    appContainer = document.getElementById("app-container");
+    cardContainer = document.getElementById("card-container");
+    appContainer?.addEventListener("scroll", throttleHandleScroll);
+
+    return () => {
+      appContainer?.removeEventListener("scroll", throttleHandleScroll);
+    };
   }, []);
 
   useEffect(() => {
     getData(page);
   }, [page]);
 
+  const filteredData = useMemo(
+    () =>
+      data.filter((item) =>
+        item.name.match(
+          new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi")
+        )
+      ),
+    [searchQuery, data]
+  );
+
+  useEffect(() => {
+    const search = () => {
+      if (searchQuery.length) {
+        setVisibleCards(filteredData);
+      } else {
+        setVisibleCards(data);
+      }
+    };
+
+    search();
+  }, [searchQuery, data]);
+
   return (
-    <div id="app-container" className="app-container">
-      <Nav setVisibility={setVisibility} />
-      <Search
-        visibility={visibility ? "block" : "none"}
-        setVisibleCards={setVisibleCards}
-        data={data}
-      />
-      <div id="card-container" className="card-container">
-        <Suspense fallback={<FallbackLoader />}>
-          {visibleCards.map((item, idx) => (
-            // ids would have been prefered for keys. Because they were not present in mock api response I have used index.
-            <Card data={item} key={idx} />
-          ))}
-        </Suspense>
+    <DataContext.Provider
+      value={{
+        data,
+        setData,
+        visibleCards,
+        setVisibleCards,
+        searchQuery,
+        setSearchQuery,
+      }}
+    >
+      <div id="app-container" className="app-container">
+        <Nav />
+        <div id="card-container" className="card-container">
+          <Suspense fallback={<FallbackLoader />}>
+            {visibleCards.map((item) => (
+              <Card data={item} />
+            ))}
+          </Suspense>
+        </div>
       </div>
-    </div>
+    </DataContext.Provider>
   );
 };
 

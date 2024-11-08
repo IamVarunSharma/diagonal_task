@@ -1,44 +1,33 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { memo, useContext, useRef, useEffect } from "react";
 
 import "./search.scss";
+import DataContext from "../Context/DataContext";
+import { throttle } from "../utils/utils";
 
-const Search = ({ setVisibleCards, data, visibility }) => {
-  const [searchQuery, setSearchQuery] = useState("");
+const Search = ({ visibility }) => {
+  const { setSearchQuery, searchQuery } = useContext(DataContext);
+  let inputRef = useRef();
 
-  const filteredData = useMemo(
-    () =>
-      data.filter((item) =>
-        item.name.match(
-          new RegExp(searchQuery.replace(/[.*+?^${}()|[\]\\]/g, "\\$&"), "gi")
-        )
-      ),
-    [searchQuery, data]
-  );
-
-  const search = () => {
-    if (searchQuery.length && visibility) {
-      setVisibleCards(filteredData);
-    } else {
-      setSearchQuery('')
-      setVisibleCards(data);
-    }
-  };
+  const handleChange = throttle((event) => {
+    setSearchQuery(event.target.value);
+  }, 1000);
 
   useEffect(() => {
-    search();
-  }, [searchQuery, data]);
+    inputRef.current.focus();
+  }, [visibility]);
 
   return (
     <input
       className="search"
+      onChange={handleChange}
       value={searchQuery}
       type="text"
       placeholder="Search"
       id="search"
-      onChange={(event) => setSearchQuery(event.target.value)}
-      style={{display: visibility}}
+      ref={inputRef}
+      style={{ display: visibility }}
     />
   );
 };
 
-export default Search;
+export default memo(Search);

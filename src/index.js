@@ -1,10 +1,10 @@
-import React, {lazy} from 'react';
-import { createRoot } from 'react-dom/client';
-import './index.scss';
+import React, { lazy } from "react";
+import { createRoot } from "react-dom/client";
+import "./index.scss";
 
-const App = lazy(() => import('./App/App'));
+const App = lazy(() => import("./App/App"));
 
-const container = document.getElementById('root');
+const container = document.getElementById("root");
 if (container) {
   const root = createRoot(container);
   root.render(
